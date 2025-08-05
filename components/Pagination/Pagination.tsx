@@ -11,8 +11,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) 
   return (
     <ReactPaginate
       pageCount={totalPages}
-      forcePage={currentPage - 1} // react-paginate рахує з 0
-      onPageChange={({ selected }) => onPageChange(selected + 1)} // Конвертуємо назад у 1-based index
+      forcePage={currentPage - 1}
+      onPageChange={({ selected }) => onPageChange(selected + 1)}
       containerClassName={css.pagination}
       activeClassName={css.active}
       previousLabel="<"
