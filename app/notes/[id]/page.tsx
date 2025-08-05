@@ -6,7 +6,7 @@ import NoteDetailsClient from './NoteDetails.client'
 export default async function NoteDetailsPage({ params }: { params: { id: string } })
 {
   const queryClient = getQueryClient()
-  const id = Number(params.id)
+  const id = params.id
 
   await queryClient.prefetchQuery({
     queryKey: ['note', id],
