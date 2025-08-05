@@ -21,7 +21,7 @@ const NoteList = ({ notes, onNoteDeleted }: NoteListProps) => {
     },
   });
 
-  const handleDelete = useCallback((id: number): void => {
+  const handleDelete = useCallback((id: string): void => {
     if (window.confirm('Are you sure you want to delete this note?')) {
       deleteMutation.mutate(id);
     }

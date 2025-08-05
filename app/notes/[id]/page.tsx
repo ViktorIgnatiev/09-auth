@@ -11,7 +11,7 @@ interface PageProps {
 
 export default async function NoteDetailsPage({ params }: PageProps) {
   const queryClient = getQueryClient()
-  const id = Number(params.id)
+  const id = params.id
 
   await queryClient.prefetchQuery({
     queryKey: ['note', id],
