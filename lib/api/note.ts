@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Note, NoteTag, FetchNotesParams, FetchNotesResponse, CreateNoteParams } from "@/types/note";
+import type { Note, FetchNotesParams, FetchNotesResponse, CreateNoteParams } from "@/types/note";
 
 const API_BASE_URL = 'https://notehub-public.goit.study/api';
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
@@ -41,10 +41,14 @@ export const fetchNotes = async ({
   perPage = 12,
   search
 }: FetchNotesParams): Promise<FetchNotesResponse> => {
-  const requestParams: Record<string, any> = {
-    page,
-    perPage,
-  };
+  const requestParams: {
+  page: number;
+  perPage: number;
+  search?: string;
+} = {
+  page,
+  perPage,
+};
 
   if (search) {
     requestParams.search = search;
