@@ -81,3 +81,4 @@ export const deleteNote = async (id: string): Promise<Note> => {
   const response = await axios.delete<Note>(`/notes/${id}`);
   return response.data;
 };
+
