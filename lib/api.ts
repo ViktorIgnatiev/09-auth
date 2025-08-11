@@ -39,20 +39,21 @@ interface RawFetchNotesResponse {
 export const fetchNotes = async ({
   page = 1,
   perPage = 12,
-  search
-}: FetchNotesParams): Promise<FetchNotesResponse> => {
+  search,
+  tag
+}: FetchNotesParams & { tag?: string }): Promise<FetchNotesResponse> => {
   const requestParams: {
-  page: number;
-  perPage: number;
-  search?: string;
-} = {
-  page,
-  perPage,
-};
+    page: number;
+    perPage: number;
+    search?: string;
+    tag?: string;
+  } = {
+    page,
+    perPage,
+  };
 
-  if (search) {
-    requestParams.search = search;
-  }
+  if (search) requestParams.search = search;
+  if (tag) requestParams.tag = tag;
 
   const response = await axios.get<RawFetchNotesResponse>('/notes', {
     params: requestParams,
