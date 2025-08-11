@@ -3,14 +3,14 @@ import getQueryClient from '@/utils/getQueryClient'
 import { fetchNoteById } from '@/lib/api/note'
 import NoteDetailsClient from './NoteDetails.client'
 
-interface NoteDetailsProps {
-  params: Promise<{id:string}>
-}
-
-export default async function NoteDetailsPage({ params }: NoteDetailsProps)
-{
+export default async function NoteDetailsPage({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
   const queryClient = getQueryClient()
-  const { id } = await params
+  const resolvedParams = await params
+  const { id } = resolvedParams
 
   await queryClient.prefetchQuery({
     queryKey: ['note', id],
