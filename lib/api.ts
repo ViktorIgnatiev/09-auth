@@ -13,9 +13,9 @@ export const fetchNotes = async ({
   search,
   tag
 }: FetchNotesParams & { tag?: string }): Promise<FetchNotesResponse> => {
-  const params: any = {
+  const params: { page: number; perPage: number; search?: string; tag?: string } = {
     page,
-    perPage
+    perPage,
   };
 
   if (search) params.search = search;
