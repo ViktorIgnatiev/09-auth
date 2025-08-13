@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from 'use-debounce';
-import { useParams } from 'next/navigation';
+// import { useParams } from 'next/navigation';
 import css from './NotesPage.module.css';
 import NoteList from '@/components/NoteList/NoteList';
 import SearchBox from '@/components/SearchBox/SearchBox';
@@ -11,17 +11,15 @@ import Pagination from '@/components/Pagination/Pagination';
 import Modal from '@/components/Modal/Modal';
 import NoteForm from '@/components/NoteForm/NoteForm';
 import { fetchNotes } from '@/lib/api';
-import type { NoteTag } from '@/types/note';
 
 export default function NotesClient({ initialTag }: { initialTag?: string }) {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const [debouncedSearchTerm] = useDebounce<string>(searchTerm, 500);
-  const params = useParams();
-  
-  // Отримуємо тег з URL (якщо є)
-  const currentTag = initialTag || params.slug?.[0] || undefined;
+
+
+  const currentTag = initialTag;
 
   const {
     data,
@@ -31,12 +29,13 @@ export default function NotesClient({ initialTag }: { initialTag?: string }) {
     refetch,
   } = useQuery({
     queryKey: ['notes', page, debouncedSearchTerm, currentTag],
-    queryFn: () => fetchNotes({ 
-      page, 
-      perPage: 12, 
-      search: debouncedSearchTerm,
-      tag: currentTag === 'All' ? undefined : currentTag
-    }),
+    queryFn: () =>
+      fetchNotes({
+        page,
+        perPage: 12,
+        search: debouncedSearchTerm,
+        tag: currentTag === 'All' ? undefined : currentTag,
+      }),
     placeholderData: (previousData) => previousData,
   });
 

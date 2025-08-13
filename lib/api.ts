@@ -4,37 +4,8 @@ import type { Note, FetchNotesParams, FetchNotesResponse, CreateNoteParams } fro
 const API_BASE_URL = 'https://notehub-public.goit.study/api';
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
-if (!token) {
-  console.error('NEXT_PUBLIC_NOTEHUB_TOKEN is not defined. Please set your NoteHub API token in your .env file.');
-  throw new Error('NEXT_PUBLIC_NOTEHUB_TOKEN is not defined. Please check your .env configuration.');
-}
-
 axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-axios.interceptors.request.use(config => {
-  console.log('Making request to:', config.url);
-  return config;
-});
-
-axios.interceptors.response.use(
-  response => response,
-  error => {
-    console.error('API Error:', {
-      status: error.response?.status,
-      message: error.message,
-      url: error.config?.url,
-      data: error.response?.data,
-    });
-    return Promise.reject(error);
-  }
-);
-
-interface RawFetchNotesResponse {
-  notes: Note[];
-  totalPages: number;
-  total: number;
-}
 
 export const fetchNotes = async ({
   page = 1,
@@ -42,29 +13,22 @@ export const fetchNotes = async ({
   search,
   tag
 }: FetchNotesParams & { tag?: string }): Promise<FetchNotesResponse> => {
-  const requestParams: {
-    page: number;
-    perPage: number;
-    search?: string;
-    tag?: string;
-  } = {
+  const params: any = {
     page,
-    perPage,
+    perPage
   };
 
-  if (search) requestParams.search = search;
-  if (tag) requestParams.tag = tag;
+  if (search) params.search = search;
+  if (tag && tag !== 'All') params.tag = tag;
 
-  const response = await axios.get<RawFetchNotesResponse>('/notes', {
-    params: requestParams,
-  });
-
+  const response = await axios.get('/notes', { params });
+  
   return {
     page,
     perPage,
     data: response.data.notes,
     totalPages: response.data.totalPages,
-    total: response.data.total,
+    total: response.data.total
   };
 };
 
