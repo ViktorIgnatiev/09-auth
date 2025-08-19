@@ -12,17 +12,24 @@ export const metadata: Metadata = {
   description: 'Manage your personal notes',
 };
 
+interface RootLayoutProps {
+  children: React.ReactNode;
+  modal: React.ReactNode; // Обов'язковий modal
+}
+
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+  modal,
+}: RootLayoutProps) {
   return (
     <html lang="en">
       <body className={inter.className}>
         <TanStackProvider>
           <Header />
-          <main>{children}</main>
+          <main>
+            {children}
+            {modal}
+          </main>
           <Footer />
         </TanStackProvider>
       </body>

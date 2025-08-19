@@ -36,7 +36,7 @@ const NoteList = ({ notes, onNoteDeleted }: NoteListProps) => {
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
             <div className={css.actions}>
-              <Link href={`/notes/${note.id}`} className={css.viewButton}>
+              <Link href={`/notes/${note.id}`} className={css.viewButton} scroll={false}>
                 View details
               </Link>
               <button
