@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 interface RootLayoutProps {
   children: React.ReactNode;
-  modal: React.ReactNode; // Обов'язковий modal
+  modal: React.ReactNode;
 }
 
 export default function RootLayout({
