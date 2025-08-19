@@ -7,7 +7,7 @@ export default async function NotesPage({
   params,
 }: {
  
-  params: { slug?: string[] };
+  params: { slug: string[] };
 }) {
   const queryClient = getQueryClient();
   const tag = params.slug?.[0] || 'All';
