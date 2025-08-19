@@ -25,12 +25,12 @@ export default function TagsMenu() {
           {tags.map((tag) => (
             <li key={tag} className={css.menuItem}>
               <Link
-                    href={`/notes/filter/${encodeURIComponent(tag)}`}
-                    className={css.menuLink}
-                    onClick={() => setIsOpen(false)}
-                    prefetch={false}
-                  >
-                    {tag}
+              href={tag === 'All' ? '/notes/filter' : `/notes/filter/${tag}`}
+              className={css.menuLink}
+              onClick={() => setIsOpen(false)}
+              prefetch={false}
+              >
+              {tag}
             </Link>
             </li>
           ))}

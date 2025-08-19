@@ -1,5 +1,5 @@
-import  Modal  from '@/components/Modal/Modal';
-import NoteDetailsClient from '@/app/notes/[id]/NoteDetails.client';
+// import Modal from '@/components/Modal/Modal';
+import NotePreview from '@/app/@modal/(.)notes/[id]/NotePreview.client';
 
 export default async function ModalNotePage({
   params,
@@ -10,8 +10,15 @@ export default async function ModalNotePage({
   const { id } = resolvedParams;
 
   return (
-    <Modal onClose={() => window.history.back()}>
-      <NoteDetailsClient id={id} />
-    </Modal>
+    
+      <NotePreview id={id} />
+    
   );
 }
+
+
+// return (
+//     <Modal onClose={() => window.history.back()}>
+//       <NotePreview id={id} />
+//     </Modal>
+//   );

@@ -3,22 +3,22 @@ import getQueryClient from '@/utils/getQueryClient';
 import { fetchNotes } from '@/lib/api';
 import NotesClient from './Notes.client';
 
-export default async function NotesPage(props: {
-  params: Promise<{ slug?: string[] }>;
+export default async function NotesPage({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>;
 }) {
-  const params = await props.params;
-  const tag = params.slug?.[0] || 'All';
-
   const queryClient = getQueryClient();
+  const resolvedParams = await params;
+  const tag = resolvedParams.slug?.[0] || 'All';
 
   await queryClient.prefetchQuery({
     queryKey: ['notes', 1, '', tag],
-    queryFn: () =>
-      fetchNotes({
-        page: 1,
-        perPage: 12,
-        tag: tag === 'All' ? undefined : tag,
-      }),
+    queryFn: () => fetchNotes({
+      page: 1,
+      perPage: 12,
+      tag: tag === 'All' ? undefined : tag
+    }),
   });
 
   return (
