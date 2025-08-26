@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import css from './Header.module.css';
 import TagsMenu from '../TagsMenu/TagsMenu';
+import AuthNavigation from '../AuthNavigation/AuthNavigation'; // Додано імпорт
 
 export default function Header() {
   return (
@@ -18,6 +19,7 @@ export default function Header() {
           </li>
         </ul>
       </nav>
+      <AuthNavigation /> {/* Додано компонент навігації */}
     </header>
   );
 }
