@@ -77,7 +77,7 @@ export const deleteNote = async (id: string): Promise<Note> => {
   return response.data;
 };
 
-// Додаткові утиліти для перевірки авторизації
+
 export const checkAuth = async (): Promise<boolean> => {
   try {
     await api.get('/auth/session');

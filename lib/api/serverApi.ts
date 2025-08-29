@@ -18,12 +18,14 @@ export const getServerUser = async (): Promise<User | null> => {
       cache: 'no-store'
     });
 
-    if (response.status === 401 || response.status === 403) {
+    // Якщо немає активної сесії - це нормально, повертаємо null
+    if (response.status === 401 || response.status === 403 || response.status === 400) {
       return null;
     }
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error(`Session request failed with status: ${response.status}`);
+      return null;
     }
 
     const userData = await response.json();
@@ -40,55 +42,113 @@ export const fetchServerNotes = async ({
   search,
   tag
 }: FetchNotesParams & { tag?: string }): Promise<FetchNotesResponse> => {
-  const headersList = await headers();
-  const cookie = headersList.get('cookie');
-  
-  const url = new URL(`${baseURL}/notes`);
-  
-  // Додаємо параметри запиту
-  url.searchParams.set('page', page.toString());
-  url.searchParams.set('perPage', perPage.toString());
-  if (search) url.searchParams.set('search', search);
-  if (tag && tag !== 'All') url.searchParams.set('tag', tag);
+  try {
+    const headersList = await headers();
+    const cookie = headersList.get('cookie');
+    
+    const url = new URL(`${baseURL}/notes`);
+    
+    // Додаємо параметри запиту
+    url.searchParams.set('page', page.toString());
+    url.searchParams.set('perPage', perPage.toString());
+    if (search) url.searchParams.set('search', search);
+    if (tag && tag !== 'All') url.searchParams.set('tag', tag);
 
-  const response = await fetch(url.toString(), {
-    headers: {
-      Cookie: cookie || '',
-    },
-    credentials: 'include',
-    cache: 'no-store'
-  });
+    const response = await fetch(url.toString(), {
+      headers: {
+        Cookie: cookie || '',
+      },
+      credentials: 'include',
+      cache: 'no-store'
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch notes: ${response.statusText}`);
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Authentication required');
+      }
+      throw new Error(`Failed to fetch notes: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    return {
+      page: data.page || page,
+      perPage: data.perPage || perPage,
+      data: data.notes || data.data || [],
+      totalPages: data.totalPages || 1,
+      total: data.total || 0
+    };
+  } catch (error) {
+    console.error('Error fetching server notes:', error);
+    throw error; // Прокидуємо помилку далі для обробки в компоненті
   }
-
-  const data = await response.json();
-  
-  return {
-    page: data.page || page,
-    perPage: data.perPage || perPage,
-    data: data.notes || data.data || [],
-    totalPages: data.totalPages || 1,
-    total: data.total || 0
-  };
 };
 
 export const fetchServerNoteById = async (id: string): Promise<Note> => {
-  const headersList = await headers();
-  const cookie = headersList.get('cookie');
-  
-  const response = await fetch(`${baseURL}/notes/${id}`, {
-    headers: {
-      Cookie: cookie || '',
-    },
-    credentials: 'include',
-    cache: 'no-store'
-  });
+  try {
+    const headersList = await headers();
+    const cookie = headersList.get('cookie');
+    
+    const response = await fetch(`${baseURL}/notes/${id}`, {
+      headers: {
+        Cookie: cookie || '',
+      },
+      credentials: 'include',
+      cache: 'no-store'
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch note: ${response.statusText}`);
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Authentication required');
+      }
+      if (response.status === 404) {
+        throw new Error('Note not found');
+      }
+      throw new Error(`Failed to fetch note: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching server note by id:', error);
+    throw error; // Прокидуємо помилку далі для обробки в компоненті
   }
+};
 
-  return response.json();
+// Додаткові серверні функції
+export const checkServerAuth = async (): Promise<boolean> => {
+  try {
+    const user = await getServerUser();
+    return !!user;
+  } catch (error) {
+    return false;
+  }
+};
+
+export const getServerProfile = async (): Promise<User | null> => {
+  try {
+    const headersList = await headers();
+    const cookie = headersList.get('cookie');
+    
+    const response = await fetch(`${baseURL}/users/me`, {
+      headers: {
+        Cookie: cookie || '',
+      },
+      credentials: 'include',
+      cache: 'no-store'
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      return null;
+    }
+
+    if (!response.ok) {
+      console.error(`Profile request failed with status: ${response.status}`);
+      return null;
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching server profile:', error);
+    return null;
+  }
 };
