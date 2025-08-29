@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import css from './TagsMenu.module.css';
 import type { NoteTag } from '@/types/note';
 
@@ -9,6 +10,11 @@ const tags: NoteTag[] = ['All', 'Personal', 'Work', 'Todo', 'Meeting', 'Shopping
 
 export default function TagsMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  const handleLinkClick = () => {
+    setIsOpen(false);
+  };
 
   return (
     <div className={css.menuContainer}>
@@ -27,7 +33,7 @@ export default function TagsMenu() {
               <Link
                 href={tag === 'All' ? '/notes/filter/All' : `/notes/filter/${tag}`}
                 className={css.menuLink}
-                onClick={() => setIsOpen(false)}
+                onClick={handleLinkClick}
                 prefetch={false}
               >
                 {tag}

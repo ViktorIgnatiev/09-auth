@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { getServerUser } from '@/lib/api/serverApi';
-import ProfileClient from './ProfileClient';
 import css from './Profile.module.css';
 
 export const metadata: Metadata = {

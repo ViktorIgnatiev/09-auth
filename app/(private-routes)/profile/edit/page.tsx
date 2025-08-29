@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getCurrentUser, updateUser } from '@/lib/api/clientApi';
-import css from './EditProfile.module.css';
+import css from './EditProfilePage.module.css';
 
 export default function EditProfile() {
   const router = useRouter();

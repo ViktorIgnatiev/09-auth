@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/lib/store/authStore';
 import { logoutUser } from '@/lib/api/clientApi';
@@ -16,8 +17,17 @@ export default function AuthNavigation() {
     onSuccess: () => {
       clearUser();
       queryClient.clear();
+      // Очищаємо localStorage для надійності
+      localStorage.removeItem('auth-storage');
       router.push('/sign-in');
     },
+    onError: (error) => {
+      console.error('Logout failed:', error);
+      // Все одно очищаємо локальний стан
+      clearUser();
+      localStorage.removeItem('auth-storage');
+      router.push('/sign-in');
+    }
   });
 
   const handleLogout = () => {
@@ -27,12 +37,12 @@ export default function AuthNavigation() {
   if (!isAuthenticated) {
     return (
       <div className={css.authNav}>
-        <a href="/sign-in" className={css.navLink} prefetch={false}>
+        <Link href="/sign-in" className={css.navLink} prefetch={false}>
           Login
-        </a>
-        <a href="/sign-up" className={css.navLink} prefetch={false}>
+        </Link>
+        <Link href="/sign-up" className={css.navLink} prefetch={false}>
           Sign up
-        </a>
+        </Link>
       </div>
     );
   }
@@ -40,9 +50,9 @@ export default function AuthNavigation() {
   return (
     <div className={css.authNav}>
       <span className={css.userEmail}>{user?.email}</span>
-      <a href="/profile" className={css.navLink} prefetch={false}>
+      <Link href="/profile" className={css.navLink} prefetch={false}>
         Profile
-      </a>
+      </Link>
       <button 
         onClick={handleLogout} 
         className={css.logoutButton}

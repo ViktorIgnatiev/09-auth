@@ -8,7 +8,7 @@ import css from './NotesPage.module.css';
 import NoteList from '@/components/NoteList/NoteList';
 import SearchBox from '@/components/SearchBox/SearchBox';
 import Pagination from '@/components/Pagination/Pagination';
-import { fetchNotes } from '@/lib/api';
+import { fetchNotes } from '@/lib/api/clientApi';
 
 export default function NotesClient({ initialTag }: { initialTag?: string }) {
   const [searchTerm, setSearchTerm] = useState<string>('');

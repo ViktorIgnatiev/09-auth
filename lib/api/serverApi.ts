@@ -34,17 +34,22 @@ export const getServerUser = async (): Promise<User | null> => {
   }
 };
 
-export const fetchServerNotes = async (params: FetchNotesParams): Promise<FetchNotesResponse> => {
+export const fetchServerNotes = async ({
+  page = 1,
+  perPage = 12,
+  search,
+  tag
+}: FetchNotesParams & { tag?: string }): Promise<FetchNotesResponse> => {
   const headersList = await headers();
   const cookie = headersList.get('cookie');
   
   const url = new URL(`${baseURL}/notes`);
   
   // Додаємо параметри запиту
-  if (params.page) url.searchParams.set('page', params.page.toString());
-  if (params.perPage) url.searchParams.set('perPage', params.perPage.toString());
-  if (params.search) url.searchParams.set('search', params.search);
-  if (params.tag) url.searchParams.set('tag', params.tag);
+  url.searchParams.set('page', page.toString());
+  url.searchParams.set('perPage', perPage.toString());
+  if (search) url.searchParams.set('search', search);
+  if (tag && tag !== 'All') url.searchParams.set('tag', tag);
 
   const response = await fetch(url.toString(), {
     headers: {
@@ -61,8 +66,8 @@ export const fetchServerNotes = async (params: FetchNotesParams): Promise<FetchN
   const data = await response.json();
   
   return {
-    page: data.page || params.page || 1,
-    perPage: data.perPage || params.perPage || 12,
+    page: data.page || page,
+    perPage: data.perPage || perPage,
     data: data.notes || data.data || [],
     totalPages: data.totalPages || 1,
     total: data.total || 0

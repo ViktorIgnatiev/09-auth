@@ -4,16 +4,27 @@ const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
 export const api = axios.create({
   baseURL,
-  withCredentials: true, // Для автоматичного відправлення cookies
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Додаємо interceptor для обробки помилок авторизації
+// Додайте interceptor для логування запитів
+api.interceptors.request.use((config) => {
+  console.log('Making request to:', config.url, 'with credentials:', config.withCredentials);
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Автоматичний logout при 401 помилці
+    console.error('API Error:', error.response?.status, error.response?.data);
+    
+    if (error.response?.status === 401 || error.response?.status === 400) {
+      // Автоматичний logout при помилках авторизації
       if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth-storage');
         window.location.href = '/sign-in';
       }
     }
