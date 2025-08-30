@@ -1,37 +1,87 @@
-import { headers } from 'next/headers';
+import { cookies } from 'next/headers';
+import axios from 'axios';
 import type { User } from '@/types/user';
 import type { Note, FetchNotesParams, FetchNotesResponse } from '@/types/note';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
-// Server-side API functions
+const api = axios.create({
+  baseURL,
+  withCredentials: true,
+});
+
+// Додайте інтерцептор для логування
+api.interceptors.request.use((config) => {
+  console.log('Server API Request:', config.method?.toUpperCase(), config.url);
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => {
+    console.log('Server API Response:', response.status, response.config.url);
+    return response;
+  },
+  (error) => {
+    console.error('Server API Error:', error.response?.status, error.config?.url);
+    return Promise.reject(error);
+  }
+);
+
 export const getServerUser = async (): Promise<User | null> => {
   try {
-    const headersList = await headers();
-    const cookie = headersList.get('cookie');
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
     
-    const response = await fetch(`${baseURL}/auth/session`, {
+    // Формуємо правильний Cookie header
+    const cookieHeader = allCookies
+      .map(cookie => `${cookie.name}=${cookie.value}`)
+      .join('; ');
+
+    console.log('Server user check - cookies:', allCookies.length);
+    
+    if (!cookieHeader) {
+      console.log('No cookies found for server user check');
+      return null;
+    }
+
+    const response = await api.get('/auth/session', {
       headers: {
-        Cookie: cookie || '',
+        Cookie: cookieHeader,
       },
-      credentials: 'include',
-      cache: 'no-store'
     });
 
-    // Якщо немає активної сесії - це нормально, повертаємо null
-    if (response.status === 401 || response.status === 403 || response.status === 400) {
-      return null;
-    }
-
-    if (!response.ok) {
-      console.error(`Session request failed with status: ${response.status}`);
-      return null;
-    }
-
-    const userData = await response.json();
-    return userData;
+    return response.data;
   } catch (error) {
     console.error('Error fetching server user:', error);
+    return null;
+  }
+};
+
+export const getServerProfile = async (): Promise<User | null> => {
+  try {
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
+    
+    const cookieHeader = allCookies
+      .map(cookie => `${cookie.name}=${cookie.value}`)
+      .join('; ');
+
+    console.log('Server profile check - cookies:', allCookies.length);
+    
+    if (!cookieHeader) {
+      console.log('No cookies found for server profile check');
+      return null;
+    }
+
+    const response = await api.get('/users/me', {
+      headers: {
+        Cookie: cookieHeader,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching server profile:', error);
     return null;
   }
 };
@@ -43,78 +93,66 @@ export const fetchServerNotes = async ({
   tag
 }: FetchNotesParams & { tag?: string }): Promise<FetchNotesResponse> => {
   try {
-    const headersList = await headers();
-    const cookie = headersList.get('cookie');
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
     
-    const url = new URL(`${baseURL}/notes`);
-    
-    // Додаємо параметри запиту
-    url.searchParams.set('page', page.toString());
-    url.searchParams.set('perPage', perPage.toString());
-    if (search) url.searchParams.set('search', search);
-    if (tag && tag !== 'All') url.searchParams.set('tag', tag);
+    const cookieHeader = allCookies
+      .map(cookie => `${cookie.name}=${cookie.value}`)
+      .join('; ');
 
-    const response = await fetch(url.toString(), {
+    const params: Record<string, any> = {
+      page,
+      perPage: perPage || 12,
+    };
+    
+    if (search) params.search = search;
+    if (tag && tag !== 'All') params.tag = tag;
+
+    const response = await api.get('/notes', {
+      params,
       headers: {
-        Cookie: cookie || '',
+        Cookie: cookieHeader,
       },
-      credentials: 'include',
-      cache: 'no-store'
     });
 
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error('Authentication required');
-      }
-      throw new Error(`Failed to fetch notes: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    
     return {
-      page: data.page || page,
-      perPage: data.perPage || perPage,
-      data: data.notes || data.data || [],
-      totalPages: data.totalPages || 1,
-      total: data.total || 0
+      page: response.data.page || page,
+      perPage: response.data.perPage || perPage,
+      data: response.data.notes || response.data.data || [],
+      totalPages: response.data.totalPages || 1,
+      total: response.data.total || 0,
     };
   } catch (error) {
     console.error('Error fetching server notes:', error);
-    throw error; // Прокидуємо помилку далі для обробки в компоненті
+    throw error;
   }
 };
 
 export const fetchServerNoteById = async (id: string): Promise<Note> => {
   try {
-    const headersList = await headers();
-    const cookie = headersList.get('cookie');
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
     
-    const response = await fetch(`${baseURL}/notes/${id}`, {
+    const cookieHeader = allCookies
+      .map(cookie => `${cookie.name}=${cookie.value}`)
+      .join('; ');
+
+    const response = await api.get(`/notes/${id}`, {
       headers: {
-        Cookie: cookie || '',
+        Cookie: cookieHeader,
       },
-      credentials: 'include',
-      cache: 'no-store'
     });
 
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error('Authentication required');
-      }
-      if (response.status === 404) {
-        throw new Error('Note not found');
-      }
-      throw new Error(`Failed to fetch note: ${response.statusText}`);
+    if (response.status === 200) {
+      return response.data;
     }
-
-    return response.json();
+    throw new Error(`Failed to fetch note: ${response.status}`);
   } catch (error) {
     console.error('Error fetching server note by id:', error);
-    throw error; // Прокидуємо помилку далі для обробки в компоненті
+    throw error;
   }
 };
 
-// Додаткові серверні функції
 export const checkServerAuth = async (): Promise<boolean> => {
   try {
     const user = await getServerUser();
@@ -124,31 +162,12 @@ export const checkServerAuth = async (): Promise<boolean> => {
   }
 };
 
-export const getServerProfile = async (): Promise<User | null> => {
+// Додаткова функція для перевірки сесії (для middleware)
+export const getServerSession = async (): Promise<{ user: User | null }> => {
   try {
-    const headersList = await headers();
-    const cookie = headersList.get('cookie');
-    
-    const response = await fetch(`${baseURL}/users/me`, {
-      headers: {
-        Cookie: cookie || '',
-      },
-      credentials: 'include',
-      cache: 'no-store'
-    });
-
-    if (response.status === 401 || response.status === 403) {
-      return null;
-    }
-
-    if (!response.ok) {
-      console.error(`Profile request failed with status: ${response.status}`);
-      return null;
-    }
-
-    return response.json();
+    const user = await getServerUser();
+    return { user };
   } catch (error) {
-    console.error('Error fetching server profile:', error);
-    return null;
+    return { user: null };
   }
 };

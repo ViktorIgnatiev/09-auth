@@ -14,7 +14,34 @@
     font-size: 0.9rem;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
+.authNav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
 
+.warning {
+    color: #ff6b6b;
+    font-size: 12px;
+    background: #fff3f3;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #ff6b6b;
+}
+
+.refreshButton {
+    background: #4ecdc4;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.refreshButton:hover {
+    background: #45b7aa;
+}
 .logoutButton:hover {
     background-color: white;
     color: #333;
@@ -33,4 +60,41 @@
 
 .navigationLink:hover {
     color: #ddd;
+}
+
+/* components/AuthNavigation/AuthNavigation.module.css */
+.authNav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.warning {
+    color: #d63031;
+    font-size: 12px;
+    background: #ffeaa7;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #fdcb6e;
+    font-weight: 500;
+}
+
+.refreshButton {
+    background: #00b894;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.refreshButton:hover:not(:disabled) {
+    background: #00a382;
+}
+
+.refreshButton:disabled {
+    background: #b2bec3;
+    cursor: not-allowed;
 }

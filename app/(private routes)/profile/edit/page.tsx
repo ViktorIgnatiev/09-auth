@@ -1,102 +1,117 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { getCurrentUser, updateUser } from '@/lib/api/clientApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getProfile, updateUser } from '@/lib/api/clientApi';
+import { useAuthStore } from '@/lib/store/authStore';
 import css from './EditProfilePage.module.css';
 
-export default function EditProfile() {
+export default function ProfileEditPage() {
   const router = useRouter();
-  const [error, setError] = useState('');
-
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: getCurrentUser,
+  const queryClient = useQueryClient();
+  const { setUser } = useAuthStore();
+  
+  const { data: user, isLoading, isError } = useQuery({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+    staleTime: 5 * 60 * 1000,
   });
+
+  const [username, setUsername] = useState('');
+  const [avatar, setAvatar] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username);
+      setAvatar(user.avatar);
+    }
+  }, [user]);
 
   const updateMutation = useMutation({
     mutationFn: updateUser,
-    onSuccess: () => {
-      router.push('/profile');
+    onSuccess: (updatedUser) => {
+      // Update the global state with the new user data
+      setUser(updatedUser);
+      // Invalidate the query to refetch fresh data on next access
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      // Navigate back
+      router.back();
     },
-    onError: (error: any) => {
-      setError(error.response?.data?.message || 'Update failed');
+    onError: (error) => {
+      console.error('Failed to update profile:', error);
+      // Optional: show an error message to the user
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
-    const formData = new FormData(e.currentTarget);
-    const username = formData.get('username') as string;
-
-    if (!username) {
-      setError('Username is required');
-      return;
-    }
-
-    updateMutation.mutate({ username });
-  };
-
-  const handleCancel = () => {
-    router.back();
+    updateMutation.mutate({ username, avatar });
   };
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return <p className={css.message}>Loading profile data...</p>;
+  }
+
+  if (isError) {
+    return <p className={css.error}>Failed to load profile data.</p>;
+  }
+
+  if (!user) {
+    return <p className={css.message}>User not found.</p>;
   }
 
   return (
-    <main className={css.mainContent}>
-      <div className={css.profileCard}>
-        <h1 className={css.formTitle}>Edit Profile</h1>
-
-        <img
-          src={user?.avatar || '/default-avatar.png'}
-          alt="User Avatar"
-          width={120}
-          height={120}
-          className={css.avatar}
-        />
-
-        <form className={css.profileInfo} onSubmit={handleSubmit}>
-          <div className={css.usernameWrapper}>
-            <label htmlFor="username">Username:</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              className={css.input}
-              defaultValue={user?.username}
-              disabled={updateMutation.isPending}
-            />
-          </div>
-
-          <p>Email: {user?.email}</p>
-
-          <div className={css.actions}>
-            <button 
-              type="submit" 
-              className={css.saveButton}
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending ? 'Saving...' : 'Save'}
-            </button>
-            <button 
-              type="button" 
-              className={css.cancelButton}
-              onClick={handleCancel}
-              disabled={updateMutation.isPending}
-            >
-              Cancel
-            </button>
-          </div>
-
-          {error && <p className={css.error}>{error}</p>}
-        </form>
+    <form className={css.form} onSubmit={handleSubmit}>
+      <h1 className={css.title}>Edit Profile</h1>
+      <div className={css.formGroup}>
+        <label htmlFor="email" className={css.label}>Email</label>
+        <input id="email" type="email" value={user.email} className={css.input} disabled />
       </div>
-    </main>
+      <div className={css.formGroup}>
+        <label htmlFor="username" className={css.label}>Username</label>
+        <input
+          id="username"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className={css.input}
+          disabled={updateMutation.isPending}
+          required
+        />
+      </div>
+      <div className={css.formGroup}>
+        <label htmlFor="avatar" className={css.label}>Avatar URL</label>
+        <input
+          id="avatar"
+          type="url"
+          value={avatar}
+          onChange={(e) => setAvatar(e.target.value)}
+          className={css.input}
+          disabled={updateMutation.isPending}
+          required
+        />
+      </div>
+      <div className={css.buttonGroup}>
+        <button
+          type="button"
+          className={css.cancelButton}
+          onClick={() => router.back()}
+          disabled={updateMutation.isPending}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={css.saveButton}
+          disabled={updateMutation.isPending || !username || !avatar}
+        >
+          {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+        </button>
+      </div>
+      {updateMutation.isError && (
+        <p className={css.error}>Error updating profile: {updateMutation.error.message}</p>
+      )}
+    </form>
   );
 }

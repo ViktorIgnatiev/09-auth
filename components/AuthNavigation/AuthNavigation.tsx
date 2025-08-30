@@ -1,5 +1,4 @@
 'use client';
-
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -17,32 +16,19 @@ export default function AuthNavigation() {
     onSuccess: () => {
       clearUser();
       queryClient.clear();
-      // Очищаємо localStorage для надійності
-      localStorage.removeItem('auth-storage');
       router.push('/sign-in');
     },
-    onError: (error) => {
-      console.error('Logout failed:', error);
-      // Все одно очищаємо локальний стан
+    onError: () => {
       clearUser();
-      localStorage.removeItem('auth-storage');
       router.push('/sign-in');
-    }
+    },
   });
-
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
 
   if (!isAuthenticated) {
     return (
       <div className={css.authNav}>
-        <Link href="/sign-in" className={css.navLink} prefetch={false}>
-          Login
-        </Link>
-        <Link href="/sign-up" className={css.navLink} prefetch={false}>
-          Sign up
-        </Link>
+        <Link href="/sign-in" className={css.navLink} prefetch={false}>Login</Link>
+        <Link href="/sign-up" className={css.navLink} prefetch={false}>Sign up</Link>
       </div>
     );
   }
@@ -50,11 +36,9 @@ export default function AuthNavigation() {
   return (
     <div className={css.authNav}>
       <span className={css.userEmail}>{user?.email}</span>
-      <Link href="/profile" className={css.navLink} prefetch={false}>
-        Profile
-      </Link>
-      <button 
-        onClick={handleLogout} 
+      <Link href="/profile" className={css.navLink} prefetch={false}>Profile</Link>
+      <button
+        onClick={() => logoutMutation.mutate()}
         className={css.logoutButton}
         disabled={logoutMutation.isPending}
       >

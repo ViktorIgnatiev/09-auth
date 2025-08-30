@@ -1,5 +1,5 @@
+// components/AuthProvider/AuthProvider.tsx
 'use client';
-
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -16,41 +16,34 @@ export default function AuthProvider({ children, requireAuth = false }: AuthProv
   const pathname = usePathname();
   const { setUser, setIsLoading, isAuthenticated, user } = useAuthStore();
 
-  const { data: currentUser, isLoading, isError } = useQuery({
+  const isAuthPage = pathname === '/sign-in' || pathname === '/sign-up';
+
+  const { data: currentUser, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: getCurrentUser,
     retry: false,
     staleTime: 5 * 60 * 1000,
-    enabled: !user && pathname !== '/sign-in' && pathname !== '/sign-up', // Не робити запити на auth сторінках
+    enabled: !isAuthPage, // не стукаємо на auth-сторінках
   });
 
   useEffect(() => {
+    setIsLoading(isLoading);
     if (!isLoading) {
-      setIsLoading(false);
-      
       if (currentUser) {
         setUser(currentUser);
       } else {
         setUser(null);
-        if (requireAuth && pathname !== '/sign-in') {
+        if (requireAuth && !isAuthPage) {
           router.push('/sign-in');
         }
       }
     }
-  }, [currentUser, isLoading, setUser, setIsLoading, requireAuth, router, pathname]);
+  }, [currentUser, isLoading, setUser, setIsLoading, requireAuth, router, isAuthPage]);
 
-  if (isLoading && !user && pathname !== '/sign-in' && pathname !== '/sign-up') {
+  if (isLoading && !isAuthPage && !user) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+      <div style={{ display:'flex', justifyContent:'center', alignItems:'center', height:'200px' }}>
         <p>Loading, please wait...</p>
-      </div>
-    );
-  }
-
-  if (requireAuth && !isAuthenticated && pathname !== '/sign-in') {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-        <p>Redirecting to login...</p>
       </div>
     );
   }

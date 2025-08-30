@@ -1,16 +1,21 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Додайте ці налаштування
-  experimental: {
-    serverComponentsExternalPackages: ['cookie'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ac.goit.global',
+        pathname: '/fullstack/react/**', // покриває default-avatar.jpg та og-картинку
+      },
+      {
+        protocol: 'https',
+        hostname: 'notehub-api.goit.study',
+        pathname: '/**', // якщо бекенд віддає аватари/зображення
+      },
+    ],
   },
-  // Вимкніть статичну генерацію для API routes
-  api: {
-    responseLimit: false,
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-    externalResolver: true,
-  },
-}
+};
+
+module.exports = nextConfig;

@@ -1,33 +1,24 @@
+// lib/api/api.ts
 import axios from 'axios';
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL;
-
+// ВАЖЛИВО: йдемо у ВЛАСНІ Next API-роути (app/api/*)
 export const api = axios.create({
-  baseURL,
+  baseURL: '/api',
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Додайте interceptor для логування запитів
+// Мінімальні й безпечні інтерцептори, без редиректів на 400
 api.interceptors.request.use((config) => {
-  console.log('Making request to:', config.url, 'with credentials:', config.withCredentials);
+  // корисний лог під час дебагу
+  console.log('Client API ->', config.method?.toUpperCase(), config.url);
   return config;
 });
 
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error.response?.status, error.response?.data);
-    
-    if (error.response?.status === 401 || error.response?.status === 400) {
-      // Автоматичний logout при помилках авторизації
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth-storage');
-        window.location.href = '/sign-in';
-      }
-    }
-    return Promise.reject(error);
+  (res) => res,
+  (err) => {
+    console.error('Client API Error:', err.response?.status, err.config?.url);
+    return Promise.reject(err);
   }
 );
