@@ -7,12 +7,8 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'ac.goit.global',
-        pathname: '/fullstack/react/**', // покриває default-avatar.jpg та og-картинку
-      },
-      {
-        protocol: 'https',
-        hostname: 'notehub-api.goit.study',
-        pathname: '/**', // якщо бекенд віддає аватари/зображення
+        // дозволимо всі зображення під цим префіксом
+        pathname: '/fullstack/**',
       },
     ],
   },

@@ -1,4 +1,4 @@
-// app/(private-routes)/profile/page.tsx
+export const dynamic = 'force-dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';

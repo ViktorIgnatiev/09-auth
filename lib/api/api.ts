@@ -1,6 +1,6 @@
 // lib/api/api.ts
 import axios from 'axios';
-
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
 // ВАЖЛИВО: йдемо у ВЛАСНІ Next API-роути (app/api/*)
 export const api = axios.create({
   baseURL: '/api',
