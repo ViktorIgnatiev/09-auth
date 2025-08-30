@@ -7,8 +7,13 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'ac.goit.global',
-        // дозволимо всі зображення під цим префіксом
-        pathname: '/fullstack/**',
+        pathname: '/fullstack/react/**', // покриває і notehub-og-meta.jpg, і default-avatar.jpg
+      },
+      // додатково, якщо колись аватари/зображення прийдуть з API-домену:
+      {
+        protocol: 'https',
+        hostname: 'notehub-api.goit.study',
+        pathname: '/**',
       },
     ],
   },
